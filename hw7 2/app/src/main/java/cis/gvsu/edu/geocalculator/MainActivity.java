@@ -1,9 +1,12 @@
 package cis.gvsu.edu.geocalculator;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,11 +15,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.location.Location;
 import java.text.DecimalFormat;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.DoubleSummaryStatistics;
 import java.util.List;
 
 import android.view.inputmethod.InputMethodManager;
@@ -35,11 +40,16 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.parceler.Parcels;
 
+import cis.gvsu.edu.geocalculator.webservice.WeatherService;
+
+import static cis.gvsu.edu.geocalculator.webservice.WeatherService.BROADCAST_WEATHER;
+
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
     public static int LOCATION_REQUEST=3;
     public static int SETTINGS_RESULT = 2;
     public static int HISTORY_RESULT = 1;
+
     private String bearingUnits = "degrees";
     private String distanceUnits = "kilometers";
 
@@ -49,9 +59,35 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private EditText p2Lng = null;
     private TextView distance = null;
     private TextView bearing = null;
+    private ImageView p1Icon, p2Icon;
+    private TextView p1Temp, p1Summary, p2Temp, p2Summary;
 
     DatabaseReference topRef;
     public static List<LocationLookup> allHistory;
+
+    private BroadcastReceiver weatherReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            double temp = bundle.getDouble("TEMPERATURE");
+            String summary = bundle.getString("SUMMARY");
+            String icon = bundle.getString("ICON").replaceAll("-", "_");
+            String key = bundle.getString("KEY");
+            int resID = getResources().getIdentifier(icon , "drawable", getPackageName());
+            setWeatherViews(View.VISIBLE);
+            if (key.equals("p1"))  {
+                p1Summary.setText(summary);
+                p1Temp.setText(Double.toString(temp));
+                p1Icon.setImageResource(resID);
+                p1Icon.setVisibility(View.INVISIBLE);
+            } else {
+                p2Summary.setText(summary);
+                p2Temp.setText(Double.toString(temp));
+                p2Icon.setImageResource(resID);
+            }
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +103,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         p2Lng = (EditText) this.findViewById(R.id.p2Lng);
         distance = (TextView) this.findViewById(R.id.distance);
         bearing = (TextView) this.findViewById(R.id.bearing);
+        p1Icon = (ImageView) this.findViewById(R.id.p1Icon);
+        p1Temp = (TextView) this.findViewById(R.id.p1Temp);
+        p1Summary = (TextView) this.findViewById(R.id.p1Summary);
+        p2Icon = (ImageView) this.findViewById(R.id.p2Icon);
+        p2Temp = (TextView) this.findViewById(R.id.p2Temp);
+        p2Summary = (TextView) this.findViewById(R.id.p2Summary);
 
         clearButton.setOnClickListener(v -> {
             hideKeyboard();
@@ -76,6 +118,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             p2Lng.getText().clear();
             distance.setText("Distance:");
             bearing.setText("Bearing:");
+            setWeatherViews(View.INVISIBLE);
         });
 
         searchButton.setOnClickListener(new View.OnClickListener() {
@@ -87,7 +130,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         });
 
         calcButton.setOnClickListener(v -> {
+            p1Lat = (EditText) this.findViewById(R.id.p1Lat);
+            p1Lng = (EditText) this.findViewById(R.id.p1Lng);
+            p2Lat = (EditText) this.findViewById(R.id.p2Lat);
+            p2Lng = (EditText) this.findViewById(R.id.p2Lng);
+            Double lat1 = Double.parseDouble(p1Lat.getText().toString());
+            Double lng1 = Double.parseDouble(p1Lng.getText().toString());
+            Double lat2 = Double.parseDouble(p2Lat.getText().toString());
+            Double lng2 = Double.parseDouble(p2Lng.getText().toString());
             updateScreen();
+            WeatherService.startGetWeather(this, Double.toString(lat1), Double.toString(lng1), "p1");
+            WeatherService.startGetWeather(this, Double.toString(lat2), Double.toString(lng2), "p2");
+
         });
 
         GoogleApiClient apiClient = new GoogleApiClient.Builder(this)
@@ -238,12 +292,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         allHistory.clear();
         topRef = FirebaseDatabase.getInstance().getReference("history");
         topRef.addChildEventListener(chEvListener);
+        IntentFilter weatherFilter = new IntentFilter(BROADCAST_WEATHER);
+        LocalBroadcastManager.getInstance(this).registerReceiver(weatherReceiver, weatherFilter);
+        setWeatherViews(View.INVISIBLE);
     }
 
     @Override
     public void onPause(){
         super.onPause();
         topRef.removeEventListener(chEvListener);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(weatherReceiver);
     }
 
     @Override
@@ -285,6 +343,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         }
     };
+
+    private void setWeatherViews(int visible) {
+        p1Icon.setVisibility(visible);
+        p2Icon.setVisibility(visible);
+        p1Summary.setVisibility(visible);
+        p2Summary.setVisibility(visible);
+        p1Temp.setVisibility(visible);
+        p2Temp.setVisibility(visible);
+    }
 
 }
 

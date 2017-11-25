@@ -45,7 +45,7 @@
 
     <Button
         android:text="Calculate"
-        android:layout_width="102dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/calc"
         tools:layout_conversion_absoluteX="8dp"
@@ -164,5 +164,69 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintHorizontal_chainStyle="packed"
         />
+
+    <ImageView
+        android:id="@+id/p1Icon"
+        android:layout_width="66dp"
+        android:layout_height="63dp"
+        app:srcCompat="@drawable/placeholder"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/p2Icon"
+        android:layout_marginLeft="16dp"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+    <ImageView
+        android:id="@+id/p2Icon"
+        android:layout_width="66dp"
+        android:layout_height="63dp"
+        app:srcCompat="@drawable/placeholder"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/bearing"
+        android:layout_marginLeft="16dp"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+    <TextView
+        android:id="@+id/p1Temp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        app:layout_constraintLeft_toRightOf="@+id/p2Icon"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintTop_toTopOf="@+id/p2Icon"
+        android:layout_marginTop="8dp" />
+
+    <TextView
+        android:id="@+id/p1Summary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:text="TextView"
+        app:layout_constraintBottom_toBottomOf="@+id/p2Icon"
+        app:layout_constraintLeft_toRightOf="@+id/p2Icon"
+        app:layout_constraintTop_toBottomOf="@+id/p1Temp" />
+
+    <TextView
+        android:id="@+id/p2Temp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        app:layout_constraintTop_toTopOf="@+id/p1Icon"
+        android:layout_marginTop="8dp"
+        app:layout_constraintLeft_toRightOf="@+id/p1Icon"
+        android:layout_marginLeft="8dp" />
+
+    <TextView
+        android:id="@+id/p2Summary"
+        android:layout_width="wrap_content"
+        android:layout_height="17dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:text="TextView"
+        app:layout_constraintBottom_toBottomOf="@+id/p1Icon"
+        app:layout_constraintLeft_toRightOf="@+id/p1Icon"
+        app:layout_constraintTop_toBottomOf="@+id/p2Temp" />
 
 </android.support.constraint.ConstraintLayout>

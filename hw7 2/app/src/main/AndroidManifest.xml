@@ -26,10 +26,15 @@
         <activity
             android:name=".LocationSearchActivity"
             android:label="@string/title_activity_location_search"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDw-9PI5pbJXdtLkFXt97oMi5f9atS8j8E" />
+
+        <service
+            android:name=".webservice.WeatherService"
+            android:exported="false"></service>
     </application>
 
 </manifest>
